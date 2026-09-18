@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { LayoutDashboard, GitMerge, ListTree, BrainCircuit, BarChart2, Settings, Bell, Search } from 'lucide-react';
 import Dashboard from './Dashboard';
 import Pipelines from './Pipelines';
+import PipelineDetails from './PipelineDetails';
+import AIInsights from './AIInsights';
+
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
   <div 
     onClick={onClick}
@@ -35,18 +38,6 @@ export default function App() {
           <SidebarItem icon={BarChart2} label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
         </nav>
 
-        {/* ... (skip down to the content area) ... */}
-        
-        {/* Dynamic Page Content */}
-        <div className="flex-1 overflow-y-auto p-8">
-          {activeTab === 'dashboard' && <Dashboard />}
-          {activeTab === 'pipelines' && <Pipelines />}
-          {/* We will add the others here as we build them */}
-          {activeTab === 'details' && <div className="text-slate-400">Pipeline Details Screen (Coming Next)</div>}
-          {activeTab === 'insights' && <div className="text-slate-400">AI Insights Screen (Coming Next)</div>}
-          {activeTab === 'analytics' && <div className="text-slate-400">Analytics Screen (Coming Next)</div>}
-        </div>
-
         <div className="p-4 border-t border-slate-800">
           <SidebarItem icon={Settings} label="Settings" />
         </div>
@@ -73,7 +64,11 @@ export default function App() {
 
         {/* Dynamic Page Content */}
         <div className="flex-1 overflow-y-auto p-8">
-          <Dashboard />
+          {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'pipelines' && <Pipelines />}
+          {activeTab === 'details' && <PipelineDetails />}
+          {activeTab === 'insights' && <AIInsights />}
+          {activeTab === 'analytics' && <div className="text-slate-400">Analytics Screen (Coming Soon)</div>}
         </div>
       </main>
     </div>
