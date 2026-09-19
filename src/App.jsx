@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, GitMerge, ListTree, BrainCircuit, BarChart2, Settings, Bell, Search } from 'lucide-react';
+import { LayoutDashboard, GitMerge, ListTree, BrainCircuit, BarChart2, Settings as SettingsIcon, Bell, Search } from 'lucide-react';
 import Dashboard from './Dashboard';
 import Pipelines from './Pipelines';
 import PipelineDetails from './PipelineDetails';
 import AIInsights from './AIInsights';
+import Settings from './Settings';
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
   <div 
@@ -39,7 +40,7 @@ export default function App() {
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <SidebarItem icon={Settings} label="Settings" />
+          <SidebarItem icon={SettingsIcon} label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
         </div>
       </aside>
 
@@ -69,6 +70,7 @@ export default function App() {
           {activeTab === 'details' && <PipelineDetails />}
           {activeTab === 'insights' && <AIInsights />}
           {activeTab === 'analytics' && <div className="text-slate-400">Analytics Screen (Coming Soon)</div>}
+          {activeTab === 'settings' && <Settings />}
         </div>
       </main>
     </div>
