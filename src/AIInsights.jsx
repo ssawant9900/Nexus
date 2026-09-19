@@ -1,58 +1,19 @@
-import React from 'react';
-import { BrainCircuit, Search, Zap, Code2, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Bot, Check, ChevronDown, FileCode2, GitCommitHorizontal, ShieldAlert, Sparkles } from 'lucide-react';
+
+function DiffLine({ number, sign, children, tone = 'neutral' }) {
+  const colours = { removed: 'bg-rose-950/35 text-rose-200', added: 'bg-emerald-950/35 text-emerald-200', neutral: 'text-slate-300' };
+  return <div className={`grid grid-cols-[32px_18px_1fr] px-3 ${colours[tone]}`}><span className="select-none text-slate-600">{number}</span><span>{sign}</span><span className="whitespace-pre">{children}</span></div>;
+}
 
 export default function AIInsights() {
-  return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-          <BrainCircuit className="text-indigo-400" /> AI Optimization Engine
-        </h2>
-        <p className="text-slate-400">Autonomous analysis of pipeline failures and bottlenecks.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Root Cause Analysis */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-          <div className="flex items-center gap-2 text-rose-400 font-semibold mb-4 text-lg">
-            <Search size={22} /> Root Cause Analysis
-          </div>
-          <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 mb-4">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Target Incident</span>
-            <span className="text-white">Pipeline <strong className="text-rose-400">#106</strong> failed during Integration Testing.</span>
-          </div>
-          <p className="text-slate-300 text-sm leading-relaxed mb-4">
-            The LLM analysis of the logs indicates that the failure was not caused by a code syntax error, but by a <strong>missing environment variable (AUTH_TOKEN)</strong> in the Docker test container. The testing framework attempted to reach the mock authentication service and received an HTTP 500 error.
-          </p>
-          <button className="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center gap-1">
-            View full AI reasoning trace <ArrowRight size={16} />
-          </button>
-        </div>
-
-        {/* Actionable Optimization */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-          <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-4 text-lg">
-            <Zap size={22} /> Suggested Optimization
-          </div>
-          <p className="text-slate-300 text-sm mb-4">
-            The AI has generated a patch to fix the pipeline configuration and optimize the Docker build layer caching.
-          </p>
-          
-          <div className="bg-[#0D1117] p-4 rounded-lg border border-slate-800 font-mono text-xs overflow-x-auto mb-4">
-            <div className="text-rose-400 line-through mb-1">- COPY . .</div>
-            <div className="text-rose-400 line-through mb-3">- RUN pip install -r requirements.txt</div>
-            <div className="text-emerald-400 mb-1">+ COPY requirements.txt .</div>
-            <div className="text-emerald-400 mb-1">+ RUN pip install -r requirements.txt</div>
-            <div className="text-emerald-400 mb-1">+ COPY . .</div>
-            <div className="text-emerald-400">+ ENV AUTH_TOKEN=${"${{ secrets.TEST_TOKEN }}"}</div>
-          </div>
-
-          <button className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors flex justify-center items-center gap-2">
-            <Code2 size={18} /> Apply Optimization to GitHub
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  const [applied, setApplied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  return <div className="space-y-5">
+    <section className="flex flex-col gap-3 border-b border-slate-200 pb-5 dark:border-slate-800 sm:flex-row sm:items-end sm:justify-between"><div><p className="eyebrow">Recommendation R-019 · linked to run #106</p><h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Fix the failure before optimising the build.</h1><p className="mt-1 text-sm text-slate-500">A high-confidence patch was produced from the run log and Dockerfile context.</p></div><div className="inline-flex w-fit items-center gap-2 border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-xs font-semibold text-violet-700 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-300"><Sparkles size={14}/>96% confidence</div></section>
+    <section className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+      <div className="panel dark:border-slate-800 dark:bg-[#0e141d]"><div className="panel-heading flex items-center gap-2 dark:border-slate-800"><div className="grid h-7 w-7 place-items-center bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300"><Bot size={15}/></div><div><p className="text-sm font-bold text-slate-900 dark:text-white">Root cause analysis</p><p className="text-[11px] text-slate-500">Evidence-backed diagnosis</p></div></div><div className="space-y-5 p-5"><div className="border-l-2 border-rose-500 pl-3"><p className="eyebrow">Observed failure</p><p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Integration tests cannot authenticate.</p></div><p className="text-sm leading-6 text-slate-600 dark:text-slate-300">The test runner starts inside a Docker container that never receives <code className="bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">AUTH_TOKEN</code>. The mock authentication API rejects its request and returns HTTP 500 before the checkout assertion can run.</p><div className="border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/20"><div className="flex gap-2"><ShieldAlert className="mt-0.5 shrink-0 text-amber-600" size={15}/><p className="text-xs leading-5 text-amber-800 dark:text-amber-200"><strong>Scope:</strong> this impacts integration tests only. Production runtime variables are not affected.</p></div></div><button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500">{expanded ? 'Hide reasoning trace' : 'Show reasoning trace'}<ChevronDown size={14} className={expanded ? 'rotate-180 transition' : 'transition'}/></button>{expanded && <div className="border-l border-slate-200 pl-3 font-mono text-[11px] leading-5 text-slate-500 dark:border-slate-700">01 · Detected status mismatch in test output{`\n`}02 · Traced request to missing container environment variable{`\n`}03 · Matched variable name against repository workflow convention</div>}</div></div>
+      <div className="panel overflow-hidden dark:border-slate-800 dark:bg-[#0e141d]"><div className="panel-heading flex items-center justify-between dark:border-slate-800"><div className="flex items-center gap-2"><div className="grid h-7 w-7 place-items-center bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"><FileCode2 size={15}/></div><div><p className="text-sm font-bold text-slate-900 dark:text-white">Proposed patch</p><p className="text-[11px] text-slate-500">Dockerfile · 4 additions, 1 removal</p></div></div><span className="font-mono text-[10px] text-slate-400">Dockerfile</span></div><div className="bg-[#0a0f16] py-3 font-mono text-xs leading-6"><DiffLine number="10" sign=" " >FROM python:3.12-slim</DiffLine><DiffLine number="12" sign="-" tone="removed">RUN pip install -r requirements.txt</DiffLine><DiffLine number="12" sign="+" tone="added">{'RUN --mount=type=cache,target=/root/.cache/pip \\'}</DiffLine><DiffLine number="13" sign="+" tone="added">    pip install -r requirements.txt</DiffLine><DiffLine number="14" sign="+" tone="added">ARG AUTH_TOKEN</DiffLine><DiffLine number="15" sign="+" tone="added">ENV AUTH_TOKEN=$&#123;AUTH_TOKEN&#125;</DiffLine><div className="my-2 border-t border-slate-800"/><DiffLine number="18" sign=" " >{'CMD ["python", "app.py"]'}</DiffLine></div><div className="flex flex-col gap-3 border-t border-slate-200 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs leading-5 text-slate-500">Caches package downloads and explicitly supplies the test token at build time.</p><button onClick={() => setApplied(true)} disabled={applied} className={applied ? 'inline-flex shrink-0 items-center justify-center gap-2 bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white' : 'button-primary shrink-0'}>{applied ? <><Check size={14}/>Patch queued</> : <><GitCommitHorizontal size={14}/>Apply patch</>}</button></div></div>
+    </section>
+  </div>;
 }

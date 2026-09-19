@@ -1,147 +1,31 @@
-import React from 'react';
-import { Activity, CheckCircle2, XCircle, Clock, AlertTriangle, Lightbulb, ChevronRight, BrainCircuit } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Activity, ArrowUpRight, Bot, ChevronRight, Clock3, GitPullRequest, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-const mockChartData = [
-  { name: 'Run 101', time: 8.2 },
-  { name: 'Run 102', time: 7.8 },
-  { name: 'Run 103', time: 8.5 },
-  { name: 'Run 104', time: 7.1 },
-  { name: 'Run 105', time: 6.8 },
-  { name: 'Run 106', time: 9.4 },
-  { name: 'Run 107', time: 6.4 },
+const performance = [
+  { day: 'Mon', time: 11.8 }, { day: 'Tue', time: 9.6 }, { day: 'Wed', time: 12.4 },
+  { day: 'Thu', time: 8.7 }, { day: 'Fri', time: 10.2 }, { day: 'Sat', time: 7.9 }, { day: 'Sun', time: 8.4 },
+];
+const recentRuns = [
+  ['#108', 'main', 'a7f92b4', 'Running', '2m 14s'], ['#107', 'main', 'c3d81e9', 'Passed', '6m 42s'],
+  ['#106', 'feature/cart', '91bc21d', 'Failed', '4m 12s'], ['#105', 'release/2.4', 'f4a29c1', 'Passed', '7m 05s'],
 ];
 
-const StatCard = ({ title, value, subtext, icon: Icon, colorClass }) => (
-  <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl flex items-start justify-between">
-    <div>
-      <h3 className="text-slate-400 text-sm font-medium mb-1">{title}</h3>
-      <p className="text-3xl font-bold text-slate-100">{value}</p>
-      <p className="text-sm text-slate-500 mt-1">{subtext}</p>
-    </div>
-    <div className={`p-3 rounded-lg ${colorClass}`}>
-      <Icon size={24} />
-    </div>
-  </div>
-);
+function Metric({ label, value, detail, icon: Icon, tone }) {
+  return <div className="panel p-4 dark:border-slate-800 dark:bg-[#0e141d]"><div className="flex items-start justify-between"><p className="eyebrow">{label}</p><Icon size={16} className={tone}/></div><div className="mt-6 flex items-end justify-between"><p className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">{value}</p><p className="text-[11px] text-slate-500">{detail}</p></div></div>;
+}
+function RunStatus({ status }) {
+  const styles = { Running: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300', Passed: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300', Failed: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' };
+  return <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold ${styles[status]}`}><span className={`h-1.5 w-1.5 rounded-full ${status === 'Running' ? 'bg-blue-500 animate-pulse' : status === 'Passed' ? 'bg-emerald-500' : 'bg-rose-500'}`}/>{status}</span>;
+}
 
-const PipelineStage = ({ name, status, isLast }) => {
-  const getStatusColor = () => {
-    if (status === 'success') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-    if (status === 'running') return 'bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse';
-    return 'bg-slate-800 text-slate-500 border-slate-700';
-  };
-
-  return (
-    <div className="flex items-center">
-      <div className={`px-4 py-2 rounded-lg border text-sm font-medium ${getStatusColor()}`}>
-        {name}
-      </div>
-      {!isLast && <ChevronRight className="mx-2 text-slate-600" size={20} />}
-    </div>
-  );
-};
-
-export default function Dashboard() {
-  return (
-    <div className="space-y-6 flex flex-col max-w-7xl mx-auto">
-      
-      {/* Header Section */}
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1">Pipeline Overview</h2>
-        <p className="text-slate-400">Monitoring real-time CI/CD telemetry</p>
-      </div>
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard title="Total Runs" value="128" subtext="Last 30 days" icon={Activity} colorClass="bg-indigo-500/10 text-indigo-400" />
-        <StatCard title="Success Rate" value="91.4%" subtext="+2.1% from last week" icon={CheckCircle2} colorClass="bg-emerald-500/10 text-emerald-400" />
-        <StatCard title="Failed Pipelines" value="11" subtext="3 require attention" icon={XCircle} colorClass="bg-rose-500/10 text-rose-400" />
-        <StatCard title="Avg Duration" value="6m 42s" subtext="-1m 12s after optimization" icon={Clock} colorClass="bg-amber-500/10 text-amber-400" />
-      </div>
-
-      {/* Grid Layout for Chart & Current Pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Chart */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-xl">
-          <h3 className="text-lg font-semibold text-white mb-6">Pipeline Performance (Duration in mins)</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockChartData}>
-                <defs>
-                  <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc' }}
-                  itemStyle={{ color: '#818cf8' }}
-                />
-                <Area type="monotone" dataKey="time" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorTime)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Current Pipeline Status */}
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl flex flex-col">
-          <h3 className="text-lg font-semibold text-white mb-6">Current Pipeline: #108</h3>
-          <div className="flex-1 flex flex-col justify-center gap-4">
-            <PipelineStage name="Build" status="success" />
-            <PipelineStage name="Unit Tests" status="success" />
-            <PipelineStage name="Security Scan" status="running" />
-            <PipelineStage name="Docker Build" status="pending" />
-            <PipelineStage name="Deploy" status="pending" isLast={true} />
-          </div>
-        </div>
-      </div>
-
-      {/* AI Intelligence Section */}
-      <div>
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <BrainCircuit className="text-purple-400" size={20} />
-          Autonomous AI Insights
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
-          <div className="bg-rose-500/10 border border-rose-500/20 p-5 rounded-xl">
-            <div className="flex items-center gap-2 text-rose-400 font-semibold mb-2">
-              <AlertTriangle size={18} />
-              Failure Detected
-            </div>
-            <p className="text-slate-300 text-sm mb-2">Run #106 failed at Integration Testing.</p>
-            <div className="bg-slate-950 p-3 rounded border border-rose-500/10 font-mono text-xs text-slate-400">
-              Root Cause: Authentication API returned HTTP 500. Token mismatch.
-            </div>
-          </div>
-
-          <div className="bg-amber-500/10 border border-amber-500/20 p-5 rounded-xl">
-            <div className="flex items-center gap-2 text-amber-400 font-semibold mb-2">
-              <Clock size={18} />
-              Bottleneck Identified
-            </div>
-            <p className="text-slate-300 text-sm">Testing phase currently consumes 59% of total pipeline execution time.</p>
-          </div>
-
-          <div className="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl">
-            <div className="flex items-center gap-2 text-indigo-400 font-semibold mb-2">
-              <Lightbulb size={18} />
-              AI Recommendation
-            </div>
-            <p className="text-slate-300 text-sm mb-4">Consider parallel execution of independent test suites to reduce duration.</p>
-            <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-              Apply Optimization
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  );
+export default function Dashboard({ onNavigate }) {
+  return <div className="space-y-5">
+    <section className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 dark:border-slate-800 sm:flex-row sm:items-end"><div><p className="eyebrow">Friday, 19 September · 10:42 IST</p><h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">System posture is stable.</h1><p className="mt-1 text-sm text-slate-500">One failed run needs review; the rest of your delivery system is operating normally.</p></div><button onClick={() => onNavigate('pipelines')} className="button-secondary"><GitPullRequest size={14}/>View all runs</button></section>
+    <section className="grid gap-3 md:grid-cols-3"><Metric label="Runs, last 30 days" value="1,284" detail="+12.5% week on week" icon={Activity} tone="text-indigo-600"/><Metric label="Successful executions" value="94.8%" detail="61 above baseline" icon={ShieldCheck} tone="text-emerald-600"/><Metric label="Median duration" value="8m 24s" detail="48s faster" icon={Clock3} tone="text-amber-600"/></section>
+    <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.8fr)]">
+      <div className="panel dark:border-slate-800 dark:bg-[#0e141d]"><div className="panel-heading flex items-start justify-between dark:border-slate-800"><div><p className="text-sm font-bold text-slate-900 dark:text-white">Completion time</p><p className="mt-0.5 text-xs text-slate-500">Median duration per day · minutes</p></div><div className="flex items-center gap-2 text-xs font-semibold text-emerald-600"><ArrowUpRight size={14}/> 18.2% faster</div></div><div className="h-72 p-4"><ResponsiveContainer width="100%" height="100%"><AreaChart data={performance} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}><defs><linearGradient id="durationFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#4f46e5" stopOpacity=".18"/><stop offset="1" stopColor="#4f46e5" stopOpacity="0"/></linearGradient></defs><CartesianGrid stroke="#e2e8f0" vertical={false} strokeDasharray="3 3"/><XAxis dataKey="day" tick={{fill:'#94a3b8', fontSize:11}} axisLine={false} tickLine={false}/><YAxis unit="m" tick={{fill:'#94a3b8', fontSize:11}} axisLine={false} tickLine={false}/><Tooltip contentStyle={{background:'#0f172a', border:'1px solid #334155', borderRadius:0, fontSize:12}} labelStyle={{color:'#94a3b8'}} itemStyle={{color:'#e2e8f0'}}/><Area type="monotone" dataKey="time" stroke="#4f46e5" strokeWidth={2} fill="url(#durationFill)"/></AreaChart></ResponsiveContainer></div></div>
+      <div className="border border-amber-200 bg-[#fffdf7] p-5 dark:border-amber-900/60 dark:bg-amber-950/15"><div className="flex items-center justify-between"><span className="eyebrow text-amber-700 dark:text-amber-400">Attention required</span><TriangleAlert size={17} className="text-amber-600"/></div><h2 className="mt-5 text-lg font-bold tracking-tight text-slate-950 dark:text-white">A slow Docker layer is costing every run.</h2><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Dependency installation accounts for <strong className="font-semibold text-slate-900 dark:text-white">60% of build time</strong> in the api-service image.</p><div className="my-5 border-t border-amber-200 dark:border-amber-900/60"/><div className="flex items-end justify-between"><div><p className="eyebrow">Potential saving</p><p className="mt-1 text-xl font-bold text-slate-900 dark:text-white">2m 38s / run</p></div><button onClick={() => onNavigate('insights')} className="button-primary bg-amber-600 hover:bg-amber-700"><Bot size={14}/>Review fix</button></div></div>
+    </section>
+    <section className="panel overflow-hidden dark:border-slate-800 dark:bg-[#0e141d]"><div className="panel-heading flex items-center justify-between dark:border-slate-800"><div><p className="text-sm font-bold text-slate-900 dark:text-white">Latest activity</p><p className="mt-0.5 text-xs text-slate-500">Most recent api-service workflow runs</p></div><button onClick={() => onNavigate('pipelines')} className="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Run history <ChevronRight className="inline" size={13}/></button></div><div className="divide-y divide-slate-100 dark:divide-slate-800">{recentRuns.map(([id, branch, commit, status, duration]) => <button onClick={() => onNavigate('details')} key={id} className="grid w-full grid-cols-[70px_minmax(110px,1fr)_auto] items-center gap-3 px-5 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-900 sm:grid-cols-[80px_minmax(120px,1fr)_90px_100px_90px]"><span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-100">{id}</span><span><span className="block text-xs font-semibold text-slate-700 dark:text-slate-200">{branch}</span><span className="font-mono text-[10px] text-slate-400 sm:hidden">{commit}</span></span><span className="hidden font-mono text-[11px] text-slate-400 sm:block">{commit}</span><span className="hidden text-xs text-slate-500 sm:block">{duration}</span><RunStatus status={status}/></button>)}</div></section>
+  </div>;
 }

@@ -1,62 +1,11 @@
-import React from 'react';
-import { CheckCircle2, XCircle, Loader2, GitBranch, Clock, Calendar } from 'lucide-react';
+import { Check, ChevronRight, Clock3, Filter, GitBranch, Play, X } from 'lucide-react';
 
-const mockPipelines = [
-  { id: '#108', branch: 'main', commit: 'a7f92b4', status: 'running', time: '2m 14s', date: 'Just now' },
-  { id: '#107', branch: 'main', commit: 'c3d81e9', status: 'success', time: '6m 42s', date: '2 hours ago' },
-  { id: '#106', branch: 'feature/cart', commit: '91bc21d', status: 'failed', time: '4m 12s', date: '5 hours ago' },
-  { id: '#105', branch: 'main', commit: 'f4a29c1', status: 'success', time: '7m 05s', date: 'Yesterday' },
-  { id: '#104', branch: 'feature/auth', commit: 'e8b73f2', status: 'success', time: '6m 55s', date: 'Yesterday' },
+const runs = [
+  { id: '#108', branch: 'main', commit: 'a7f92b4', author: 's.kumar', status: 'running', duration: '2m 14s', started: 'Just now' },
+  { id: '#107', branch: 'main', commit: 'c3d81e9', author: 'm.rossi', status: 'passed', duration: '6m 42s', started: '2 hours ago' },
+  { id: '#106', branch: 'feature/cart', commit: '91bc21d', author: 's.kumar', status: 'failed', duration: '4m 12s', started: '5 hours ago' },
+  { id: '#105', branch: 'release/2.4', commit: 'f4a29c1', author: 'a.patel', status: 'passed', duration: '7m 05s', started: 'Yesterday, 16:24' },
+  { id: '#104', branch: 'feature/auth', commit: 'e8b73f2', author: 's.kumar', status: 'passed', duration: '6m 55s', started: 'Yesterday, 11:02' },
 ];
-
-const StatusBadge = ({ status }) => {
-  if (status === 'success') return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><CheckCircle2 size={14} /> Success</span>;
-  if (status === 'failed') return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20"><XCircle size={14} /> Failed</span>;
-  if (status === 'running') return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20"><Loader2 size={14} className="animate-spin" /> Running</span>;
-};
-
-export default function Pipelines() {
-  return (
-    <div className="max-w-7xl mx-auto flex flex-col h-full">
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Pipeline Execution History</h2>
-          <p className="text-slate-400">View and manage all CI/CD workflows</p>
-        </div>
-        <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-          Trigger Pipeline
-        </button>
-      </div>
-
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-800 bg-slate-950/50 text-slate-400 text-sm">
-              <th className="px-6 py-4 font-medium">Run ID</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium">Branch / Commit</th>
-              <th className="px-6 py-4 font-medium">Duration</th>
-              <th className="px-6 py-4 font-medium">Executed</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800">
-            {mockPipelines.map((pipeline) => (
-              <tr key={pipeline.id} className="hover:bg-slate-800/50 transition-colors cursor-pointer text-sm">
-                <td className="px-6 py-4 font-medium text-white">{pipeline.id}</td>
-                <td className="px-6 py-4"><StatusBadge status={pipeline.status} /></td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1.5 text-slate-300"><GitBranch size={14} className="text-slate-500" /> {pipeline.branch}</span>
-                    <span className="text-slate-500 font-mono text-xs bg-slate-950 px-2 py-1 rounded border border-slate-800">{pipeline.commit}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-slate-300 flex items-center gap-1.5"><Clock size={14} className="text-slate-500"/> {pipeline.time}</td>
-                <td className="px-6 py-4 text-slate-400"><span className="flex items-center gap-1.5"><Calendar size={14} className="text-slate-500"/> {pipeline.date}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+function State({ value }) { const data = { running: ['RUNNING', 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300', <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500"/>], passed: ['PASSED', 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300', <Check size={12}/>], failed: ['FAILED', 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300', <X size={12}/>] }[value]; return <span className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold ${data[1]}`}>{data[2]}{data[0]}</span>; }
+export default function Pipelines({ onNavigate }) { return <div className="space-y-5"><section className="flex flex-col gap-3 border-b border-slate-200 pb-5 dark:border-slate-800 sm:flex-row sm:items-end sm:justify-between"><div><p className="eyebrow">acme / api-service</p><h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Workflow runs</h1><p className="mt-1 text-sm text-slate-500">A chronological view of deployment activity and its outcome.</p></div><button className="button-primary"><Play size={14} fill="currentColor"/>Trigger run</button></section><section className="panel overflow-hidden dark:border-slate-800 dark:bg-[#0e141d]"><div className="flex flex-col gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-2"><button className="button-secondary py-1.5"><Filter size={13}/>All statuses</button><button className="button-secondary py-1.5">Last 30 days</button></div><p className="text-xs text-slate-500">1,284 total runs</p></div><div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left"><thead className="border-b border-slate-100 bg-slate-50 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:border-slate-800 dark:bg-slate-900/50"><tr><th className="px-5 py-3">Run</th><th className="px-5 py-3">Outcome</th><th className="px-5 py-3">Branch / commit</th><th className="px-5 py-3">Triggered by</th><th className="px-5 py-3">Duration</th><th className="px-5 py-3"></th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{runs.map((run) => <tr key={run.id} onClick={() => onNavigate('details')} className="cursor-pointer text-xs transition hover:bg-slate-50 dark:hover:bg-slate-900"><td className="px-5 py-4"><p className="font-mono font-bold text-slate-800 dark:text-white">{run.id}</p><p className="mt-1 text-[10px] text-slate-400">{run.started}</p></td><td className="px-5 py-4"><State value={run.status}/></td><td className="px-5 py-4"><div className="flex items-center gap-2"><GitBranch size={13} className="text-slate-400"/><span className="font-medium text-slate-700 dark:text-slate-200">{run.branch}</span></div><code className="mt-1 inline-block text-[10px] text-slate-400">{run.commit}</code></td><td className="px-5 py-4 text-slate-500">{run.author}</td><td className="px-5 py-4"><span className="flex items-center gap-1.5 text-slate-500"><Clock3 size={13}/>{run.duration}</span></td><td className="px-5 py-4 text-right"><ChevronRight size={15} className="inline text-slate-400"/></td></tr>)}</tbody></table></div></section></div>; }
