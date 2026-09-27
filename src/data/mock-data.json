@@ -1,0 +1,177 @@
+{
+  "meta": {
+    "mode": "mock",
+    "project": "NEXUS",
+    "repository": "acme/api-service",
+    "snapshotAt": "2026-09-19T10:35:12+05:30",
+    "timezone": "Asia/Kolkata"
+  },
+  "runs": [
+    { "id": "#108", "branch": "main", "commit": "a7f92b4", "author": "s.kumar", "status": "running", "duration": "2m 14s", "started": "Just now" },
+    { "id": "#107", "branch": "main", "commit": "c3d81e9", "author": "m.rossi", "status": "passed", "duration": "11m 12s", "started": "2 hours ago" },
+    { "id": "#106", "branch": "feature/cart", "commit": "91bc21d", "author": "s.kumar", "status": "failed", "duration": "4m 12s", "started": "5 hours ago" },
+    { "id": "#105", "branch": "release/2.4", "commit": "f4a29c1", "author": "a.patel", "status": "passed", "duration": "7m 05s", "started": "Yesterday, 16:24" },
+    { "id": "#104", "branch": "feature/auth", "commit": "e8b73f2", "author": "s.kumar", "status": "passed", "duration": "6m 55s", "started": "Yesterday, 11:02" }
+  ],
+  "runDetails": {
+    "#108": {
+      "title": "Validate main branch",
+      "summary": "Recorded demo snapshot: build completed and tests are running.",
+      "stages": [
+        { "name": "Build", "duration": "1m 10s", "state": "complete" },
+        { "name": "Tests", "duration": "1m 04s", "state": "running" },
+        { "name": "Security", "duration": "Not started", "state": "waiting" },
+        { "name": "Deploy", "duration": "Not started", "state": "waiting" }
+      ],
+      "logs": "[demo] Run #108 on main (a7f92b4)\nBuild completed in 70s.\npytest tests/unit --quiet\nCollected 24 tests; execution in progress.\nThis recorded snapshot is not connected to a live runner."
+    },
+    "#107": {
+      "title": "Build and deploy api-service",
+      "summary": "Completed staging deployment. Docker dependency installation was the resource hotspot.",
+      "stages": [
+        { "name": "Setup", "duration": "3s", "state": "complete" },
+        { "name": "Build", "duration": "2m 14s", "state": "complete" },
+        { "name": "Tests", "duration": "3m 52s", "state": "complete" },
+        { "name": "Docker", "duration": "4m 11s", "state": "complete" },
+        { "name": "Deploy", "duration": "52s", "state": "complete" }
+      ],
+      "logs": "[demo] Run #107 on main (c3d81e9)\nCheckout and setup completed in 3s.\nBuild completed in 134s.\npytest tests --quiet: 24 passed in 232s.\nDocker image built in 251s.\nStaging readiness probe passed in 52s.\nWorkflow completed in 672s."
+    },
+    "#106": {
+      "title": "Validate checkout authentication",
+      "summary": "Integration tests received HTTP 401 because AUTH_TOKEN was absent from the test container.",
+      "stages": [
+        { "name": "Build", "duration": "1m 10s", "state": "complete" },
+        { "name": "Tests", "duration": "2m 05s", "state": "complete" },
+        { "name": "Integration", "duration": "57s", "state": "failed" },
+        { "name": "Security", "duration": "Not started", "state": "waiting" },
+        { "name": "Deploy", "duration": "Not started", "state": "waiting" }
+      ],
+      "logs": "[demo] Run #106 on feature/cart (91bc21d)\nBuild completed in 70s.\nUnit tests completed in 125s.\npytest tests/integration/test_cart_checkout.py\nFAILED test_checkout_session\nE   assert response.status_code == 200\nE   AssertionError: 401 != 200\nAuthenticationError: AUTH_TOKEN is unavailable in the test container.\n1 failed, 18 passed in 57s.\nProcess exited with code 1. Security and deployment skipped."
+    },
+    "#105": {
+      "title": "Validate release/2.4",
+      "summary": "Release validation and staging deployment completed.",
+      "stages": [
+        { "name": "Build", "duration": "1m 30s", "state": "complete" },
+        { "name": "Tests", "duration": "3m 10s", "state": "complete" },
+        { "name": "Security", "duration": "1m 15s", "state": "complete" },
+        { "name": "Deploy", "duration": "1m 10s", "state": "complete" }
+      ],
+      "logs": "[demo] Run #105 on release/2.4 (f4a29c1)\nBuild completed.\nRelease tests passed.\nSecurity policy checks passed.\nStaging deployment completed.\nTotal duration: 425s."
+    },
+    "#104": {
+      "title": "Validate feature/auth",
+      "summary": "Authentication changes passed all validation stages.",
+      "stages": [
+        { "name": "Build", "duration": "1m 25s", "state": "complete" },
+        { "name": "Tests", "duration": "3m 05s", "state": "complete" },
+        { "name": "Security", "duration": "1m 15s", "state": "complete" },
+        { "name": "Deploy", "duration": "1m 10s", "state": "complete" }
+      ],
+      "logs": "[demo] Run #104 on feature/auth (e8b73f2)\nBuild completed.\nAuthentication tests passed.\nSecurity policy checks passed.\nPreview deployment completed.\nTotal duration: 415s."
+    }
+  },
+  "incidents": [
+    {
+      "id": "INC-019", "runId": "#106", "title": "Integration container is missing AUTH_TOKEN",
+      "status": "open", "severity": "Critical", "owner": "Shubham Sawant",
+      "description": "Checkout integration tests returned HTTP 401. Deployment did not run. Recommendation R-019 proposes passing the test token at runtime.",
+      "timeline": [
+        { "time": "10:34:17", "title": "Incident opened", "text": "Run #106 failed during Integration with HTTP 401." },
+        { "time": "10:34:28", "title": "Diagnosis attached", "text": "AUTH_TOKEN was missing from the test container environment." },
+        { "time": "10:35:00", "title": "Recommendation prepared", "text": "R-019 is available for review. No repository changes have been made." }
+      ]
+    },
+    {
+      "id": "INC-018", "runId": "#107", "title": "Docker dependency installation exceeded CPU threshold",
+      "status": "monitoring", "severity": "Warning", "owner": "Unassigned",
+      "description": "The completed run reached 91% CPU during Docker build. R-020 proposes reusing dependency layers and pip downloads.",
+      "timeline": [{ "time": "10:32:11", "title": "CPU threshold exceeded", "text": "Docker CPU reached 91%; the run still completed successfully." }]
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "R-019", "runId": "#106", "title": "Pass the test token into the container at runtime",
+      "description": "Expose the configured CI test secret to the test process without storing it in the Docker image.",
+      "confidence": 96, "status": "pending", "impact": "Restore authentication for checkout integration tests",
+      "fileName": ".github/workflows/ci.yml",
+      "evidence": ["The integration request returned HTTP 401.", "The Docker test command did not forward AUTH_TOKEN.", "The test workflow expects a TEST_TOKEN secret; its actual configuration must be checked during backend integration."],
+      "diff": [
+        { "number": 21, "sign": "-", "text": "  run: docker run --rm nexus-test pytest tests/integration", "type": "removed" },
+        { "number": 21, "sign": "+", "text": "  env:", "type": "added" },
+        { "number": 22, "sign": "+", "text": "    AUTH_TOKEN: ${{ secrets.TEST_TOKEN }}", "type": "added" },
+        { "number": 23, "sign": "+", "text": "  run: docker run --rm --env AUTH_TOKEN nexus-test pytest tests/integration", "type": "added" }
+      ]
+    },
+    {
+      "id": "R-020", "runId": "#107", "title": "Reuse Docker dependency layers",
+      "description": "Copy dependency manifests before application code and retain pip downloads in a BuildKit cache mount.",
+      "confidence": 92, "status": "pending", "impact": "Estimated reduction: up to 2m 38s per warm build; requires validation",
+      "fileName": "Dockerfile",
+      "evidence": ["Docker build took 4m 11s.", "CPU peaked at 91% and memory at 78%.", "Copying application code before installing dependencies invalidates the dependency layer on every code change."],
+      "diff": [
+        { "number": 1, "sign": "+", "text": "# syntax=docker/dockerfile:1", "type": "added" },
+        { "number": 6, "sign": "-", "text": "COPY . .", "type": "removed" },
+        { "number": 7, "sign": "-", "text": "RUN pip install -r requirements.txt", "type": "removed" },
+        { "number": 6, "sign": "+", "text": "COPY requirements.txt .", "type": "added" },
+        { "number": 7, "sign": "+", "text": "RUN --mount=type=cache,target=/root/.cache/pip \\", "type": "added" },
+        { "number": 8, "sign": "+", "text": "    pip install -r requirements.txt", "type": "added" },
+        { "number": 9, "sign": "+", "text": "COPY . .", "type": "added" },
+        { "number": 10, "sign": " ", "text": "CMD [\"python\", \"app.py\"]", "type": "normal" }
+      ]
+    }
+  ],
+  "telemetry": {
+    "runId": "#107", "sampleIntervalSeconds": 60,
+    "samples": [
+      { "time": "10:24", "cpu": 42, "memory": 38, "pipeline": 0, "docker": 0, "tests": 0, "deploy": 0 },
+      { "time": "10:25", "cpu": 54, "memory": 41, "pipeline": 1, "docker": 0, "tests": 0, "deploy": 0 },
+      { "time": "10:26", "cpu": 51, "memory": 40, "pipeline": 2, "docker": 0, "tests": 0, "deploy": 0 },
+      { "time": "10:27", "cpu": 70, "memory": 59, "pipeline": 3, "docker": 0, "tests": 0.72, "deploy": 0 },
+      { "time": "10:28", "cpu": 82, "memory": 67, "pipeline": 4, "docker": 0, "tests": 1.72, "deploy": 0 },
+      { "time": "10:29", "cpu": 76, "memory": 63, "pipeline": 5, "docker": 0, "tests": 2.72, "deploy": 0 },
+      { "time": "10:30", "cpu": 68, "memory": 61, "pipeline": 6, "docker": 0, "tests": 3.72, "deploy": 0 },
+      { "time": "10:31", "cpu": 83, "memory": 72, "pipeline": 7, "docker": 0.85, "tests": 3.8667, "deploy": 0 },
+      { "time": "10:32", "cpu": 91, "memory": 78, "pipeline": 8, "docker": 1.85, "tests": 3.8667, "deploy": 0 },
+      { "time": "10:33", "cpu": 86, "memory": 76, "pipeline": 9, "docker": 2.85, "tests": 3.8667, "deploy": 0 },
+      { "time": "10:34", "cpu": 68, "memory": 74, "pipeline": 10, "docker": 3.85, "tests": 3.8667, "deploy": 0 },
+      { "time": "10:35", "cpu": 35, "memory": 29, "pipeline": 11, "docker": 4.1833, "tests": 3.8667, "deploy": 0.6667 },
+      { "time": "10:35:12", "cpu": 22, "memory": 25, "pipeline": 11.2, "docker": 4.1833, "tests": 3.8667, "deploy": 0.8667 }
+    ],
+    "kpis": [
+      { "label": "CPU utilization", "value": "68%", "note": "Docker sample at 10:34" },
+      { "label": "Memory usage", "value": "74%", "note": "Docker sample at 10:34" },
+      { "label": "Build duration", "value": "2m 14s", "note": "Completed" },
+      { "label": "Test duration", "value": "3m 52s", "note": "24 tests passed" },
+      { "label": "Docker build", "value": "4m 11s", "note": "Peak CPU 91%" },
+      { "label": "Deployment", "value": "52s", "note": "Staging target" },
+      { "label": "Network usage", "value": "842 MB", "note": "Inbound and outbound combined" },
+      { "label": "Artifact size", "value": "186 MB", "note": "Compressed container image" }
+    ],
+    "stages": [
+      { "name": "Build", "cpu": 54, "memory": 41, "time": "2m 14s" },
+      { "name": "Tests", "cpu": 82, "memory": 67, "time": "3m 52s" },
+      { "name": "Docker", "cpu": 91, "memory": 78, "time": "4m 11s" },
+      { "name": "Deploy", "cpu": 35, "memory": 29, "time": "52s" }
+    ],
+    "events": [
+      ["10:35:12", "NXS-107", "Deploy", "Duration", "52s", "Info"],
+      ["10:34:17", "NXS-106", "Integration", "Failure", "HTTP 401", "Critical"],
+      ["10:34:00", "NXS-107", "Docker", "CPU", "68%", "Info"],
+      ["10:32:11", "NXS-107", "Docker", "CPU", "91%", "Warning"],
+      ["10:32:00", "NXS-107", "Docker", "Memory", "78%", "Warning"]
+    ]
+  },
+  "analytics": {
+    "performance": [
+      { "week": "W1", "before": 24, "nexus": 24 },
+      { "week": "W2", "before": 25, "nexus": 18 },
+      { "week": "W3", "before": 23, "nexus": 14 },
+      { "week": "W4", "before": 26, "nexus": 11 },
+      { "week": "W5", "before": 24, "nexus": 8 }
+    ],
+    "note": "Illustrative comparison data, not measured production results."
+  },
+  "settings": { "autoApply": false, "alerts": true, "requireReview": true }
+}

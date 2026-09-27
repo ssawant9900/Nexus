@@ -1,11 +1,87 @@
-import { Check, ChevronRight, Clock3, Filter, GitBranch, Play, X } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Clock3, Filter, GitBranch, Play, XCircle, CircleDashed } from 'lucide-react';
+import { useNexus } from './context/NexusContext';
+import { Badge, Button, Card } from './components/ui';
 
-const runs = [
-  { id: '#108', branch: 'main', commit: 'a7f92b4', author: 's.kumar', status: 'running', duration: '2m 14s', started: 'Just now' },
-  { id: '#107', branch: 'main', commit: 'c3d81e9', author: 'm.rossi', status: 'passed', duration: '6m 42s', started: '2 hours ago' },
-  { id: '#106', branch: 'feature/cart', commit: '91bc21d', author: 's.kumar', status: 'failed', duration: '4m 12s', started: '5 hours ago' },
-  { id: '#105', branch: 'release/2.4', commit: 'f4a29c1', author: 'a.patel', status: 'passed', duration: '7m 05s', started: 'Yesterday, 16:24' },
-  { id: '#104', branch: 'feature/auth', commit: 'e8b73f2', author: 's.kumar', status: 'passed', duration: '6m 55s', started: 'Yesterday, 11:02' },
-];
-function State({ value }) { const data = { running: ['RUNNING', 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300', <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500"/>], passed: ['PASSED', 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300', <Check size={12}/>], failed: ['FAILED', 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300', <X size={12}/>] }[value]; return <span className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold ${data[1]}`}>{data[2]}{data[0]}</span>; }
-export default function Pipelines({ onNavigate }) { return <div className="space-y-5"><section className="flex flex-col gap-3 border-b border-slate-200 pb-5 dark:border-slate-800 sm:flex-row sm:items-end sm:justify-between"><div><p className="eyebrow">acme / api-service</p><h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Workflow runs</h1><p className="mt-1 text-sm text-slate-500">A chronological view of deployment activity and its outcome.</p></div><button className="button-primary"><Play size={14} fill="currentColor"/>Trigger run</button></section><section className="panel overflow-hidden dark:border-slate-800 dark:bg-[#0e141d]"><div className="flex flex-col gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-2"><button className="button-secondary py-1.5"><Filter size={13}/>All statuses</button><button className="button-secondary py-1.5">Last 30 days</button></div><p className="text-xs text-slate-500">1,284 total runs</p></div><div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left"><thead className="border-b border-slate-100 bg-slate-50 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:border-slate-800 dark:bg-slate-900/50"><tr><th className="px-5 py-3">Run</th><th className="px-5 py-3">Outcome</th><th className="px-5 py-3">Branch / commit</th><th className="px-5 py-3">Triggered by</th><th className="px-5 py-3">Duration</th><th className="px-5 py-3"></th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{runs.map((run) => <tr key={run.id} onClick={() => onNavigate('details')} className="cursor-pointer text-xs transition hover:bg-slate-50 dark:hover:bg-slate-900"><td className="px-5 py-4"><p className="font-mono font-bold text-slate-800 dark:text-white">{run.id}</p><p className="mt-1 text-[10px] text-slate-400">{run.started}</p></td><td className="px-5 py-4"><State value={run.status}/></td><td className="px-5 py-4"><div className="flex items-center gap-2"><GitBranch size={13} className="text-slate-400"/><span className="font-medium text-slate-700 dark:text-slate-200">{run.branch}</span></div><code className="mt-1 inline-block text-[10px] text-slate-400">{run.commit}</code></td><td className="px-5 py-4 text-slate-500">{run.author}</td><td className="px-5 py-4"><span className="flex items-center gap-1.5 text-slate-500"><Clock3 size={13}/>{run.duration}</span></td><td className="px-5 py-4 text-right"><ChevronRight size={15} className="inline text-slate-400"/></td></tr>)}</tbody></table></div></section></div>; }
+export default function Pipelines({ onNavigate }) { 
+  const { runs, setSelectedRunId } = useNexus();
+
+  const handleRunSelect = (id) => {
+    setSelectedRunId(id);
+    onNavigate('details');
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <section className="flex flex-col gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800/60 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">acme / api-service</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">Workflow runs</h1>
+          <p className="mt-1 text-sm text-zinc-500">A chronological view of deployment activity and its outcome.</p>
+        </div>
+        <Button className="gap-2"><Play size={16} fill="currentColor"/> Trigger run</Button>
+      </section>
+
+      <Card className="overflow-hidden">
+        <div className="flex flex-col gap-4 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800/60 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-3">
+            <Button variant="secondary" size="sm" className="gap-2"><Filter size={14}/> All statuses</Button>
+            <Button variant="secondary" size="sm">Last 30 days</Button>
+          </div>
+          <p className="text-xs font-medium text-zinc-500">1,284 total runs</p>
+        </div>
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full min-w-[720px] text-left">
+            <thead className="border-b border-zinc-100 bg-zinc-50/50 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:border-zinc-800/60 dark:bg-zinc-900/50">
+              <tr>
+                <th className="px-6 py-4">Run</th>
+                <th className="px-6 py-4">Outcome</th>
+                <th className="px-6 py-4">Branch / Commit</th>
+                <th className="px-6 py-4">Triggered by</th>
+                <th className="px-6 py-4">Duration</th>
+                <th className="px-6 py-4"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+              {runs.map((run) => (
+                <tr 
+                  key={run.id} 
+                  onClick={() => handleRunSelect(run.id)} 
+                  className="cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                >
+                  <td className="px-6 py-4">
+                    <p className="font-mono text-sm font-bold text-zinc-900 dark:text-white">{run.id}</p>
+                    <p className="mt-1 text-xs text-zinc-500">{run.started}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Badge variant={run.status === 'Running' ? 'info' : run.status === 'Passed' ? 'success' : 'destructive'} className="uppercase text-[10px]">
+                      {run.status === 'Running' && <CircleDashed size={12} className="mr-1.5 animate-spin"/>}
+                      {run.status === 'Passed' && <CheckCircle2 size={12} className="mr-1.5"/>}
+                      {run.status === 'Failed' && <XCircle size={12} className="mr-1.5"/>}
+                      {run.status}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <GitBranch size={16} className="text-zinc-400"/>
+                      <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">{run.branch}</span>
+                    </div>
+                    <code className="mt-1.5 inline-block rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-500 dark:bg-zinc-900">{run.commit}</code>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-zinc-500">{run.author}</td>
+                  <td className="px-6 py-4">
+                    <span className="flex items-center gap-2 text-sm text-zinc-500">
+                      <Clock3 size={16} className="text-zinc-400"/>{run.duration}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <ChevronRight size={18} className="inline text-zinc-400"/>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  ); 
+}

@@ -1,21 +1,78 @@
-import { Check, CircleDot, Clock3, Copy, GitBranch, RotateCw, Terminal, X } from 'lucide-react';
+import { useMemo } from 'react';
+import { Clock3, Copy, GitBranch, RotateCw, Terminal, CheckCircle2, XCircle, CircleDashed } from 'lucide-react';
+import { ReactFlow, Background, Controls, Handle, Position, MarkerType } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+
 import { useNexus } from './context/NexusContext';
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from './components/ui';
+
+// 1. Define the Custom UI Node for the Pipeline
+const PipelineNode = ({ data }) => {
+  const isFailed = data.status === 'failed';
+  const isPending = data.status === 'pending';
+  const isPassed = data.status === 'passed';
+
+  return (
+    <div className={`relative min-w-[160px] rounded-xl border p-4 shadow-lg transition-all dark:bg-[#0a0e17] ${
+      isFailed ? 'border-rose-500/50 shadow-rose-500/10' : 
+      isPassed ? 'border-emerald-500/30 shadow-emerald-500/10' : 
+      'border-slate-800 shadow-none opacity-60'
+    }`}>
+      {/* Input Handle */}
+      {data.id !== 'build' && (
+        <Handle type="target" position={Position.Left} className="!h-2.5 !w-2.5 !border-2 !border-[#0a0e17] !bg-slate-500" />
+      )}
+      
+      <div className="flex items-center justify-between">
+        <span className={`text-sm font-bold ${isPending ? 'text-slate-500' : 'text-slate-200'}`}>{data.label}</span>
+        {isPassed && <CheckCircle2 size={16} className="text-emerald-500" />}
+        {isFailed && <XCircle size={16} className="text-rose-500" />}
+        {isPending && <CircleDashed size={16} className="text-slate-600 animate-spin-slow" />}
+      </div>
+      <p className="mt-2 text-xs font-mono text-slate-500">{data.duration}</p>
+      
+      {/* Output Handle */}
+      {data.id !== 'deploy' && (
+        <Handle type="source" position={Position.Right} className="!h-2.5 !w-2.5 !border-2 !border-[#0a0e17] !bg-slate-500" />
+      )}
+    </div>
+  );
+};
+
+const nodeTypes = { custom: PipelineNode };
 
 export default function PipelineDetails() {
   const { selectedRun } = useNexus();
   const isFailed = selectedRun?.status === 'Failed';
 
-  const stages = [
-    { name: 'Build', duration: '1m 10s', state: 'complete' },
-    { name: 'Tests', duration: '2m 05s', state: 'complete' },
-    { name: 'Integration', duration: isFailed ? '0m 57s' : '2m 14s', state: isFailed ? 'failed' : 'complete' },
-    { name: 'Security', duration: isFailed ? 'Not started' : '1m 20s', state: isFailed ? 'waiting' : 'complete' },
-    { name: 'Deploy', duration: isFailed ? 'Not started' : '0m 52s', state: isFailed ? 'waiting' : 'complete' },
-  ];
+  // 2. Generate Nodes dynamically based on run status
+  const nodes = useMemo(() => [
+    { id: 'build', type: 'custom', position: { x: 0, y: 50 }, data: { id: 'build', label: 'Build', duration: '1m 10s', status: 'passed' } },
+    { id: 'test', type: 'custom', position: { x: 220, y: 50 }, data: { id: 'test', label: 'Unit Tests', duration: '2m 05s', status: 'passed' } },
+    { id: 'integration', type: 'custom', position: { x: 440, y: 50 }, data: { id: 'integration', label: 'Integration', duration: isFailed ? '0m 57s' : '2m 14s', status: isFailed ? 'failed' : 'passed' } },
+    { id: 'security', type: 'custom', position: { x: 660, y: 50 }, data: { id: 'security', label: 'Security Scan', duration: isFailed ? 'Skipped' : '1m 20s', status: isFailed ? 'pending' : 'passed' } },
+    { id: 'deploy', type: 'custom', position: { x: 880, y: 50 }, data: { id: 'deploy', label: 'Deploy', duration: isFailed ? 'Skipped' : '0m 52s', status: isFailed ? 'pending' : 'passed' } },
+  ], [isFailed]);
+
+  // 3. Generate Edges (Lines) linking the nodes
+  const edges = useMemo(() => {
+    const edgeStyle = (sourcePassed, targetPassed) => ({
+      stroke: sourcePassed && targetPassed ? '#10b981' : sourcePassed && !targetPassed && !isFailed ? '#0891b2' : '#334155',
+      strokeWidth: 2,
+    });
+
+    return [
+      { id: 'e1-2', source: 'build', target: 'test', type: 'smoothstep', animated: false, style: edgeStyle(true, true) },
+      { id: 'e2-3', source: 'test', target: 'integration', type: 'smoothstep', animated: isFailed, style: edgeStyle(true, !isFailed), markerEnd: { type: MarkerType.ArrowClosed, color: isFailed ? '#f43f5e' : '#10b981' } },
+      { id: 'e3-4', source: 'integration', target: 'security', type: 'smoothstep', animated: false, style: edgeStyle(!isFailed, !isFailed) },
+      { id: 'e4-5', source: 'security', target: 'deploy', type: 'smoothstep', animated: false, style: edgeStyle(!isFailed, !isFailed) },
+    ];
+  }, [isFailed]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      
+      {/* Header Section */}
       <section className="flex flex-col gap-4 border-b border-slate-200 pb-6 dark:border-slate-800/60 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-3">
@@ -33,35 +90,30 @@ export default function PipelineDetails() {
         <Button variant="secondary" className="gap-2"><RotateCw size={14}/>Re-run workflow</Button>
       </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Execution path</CardTitle>
-          <p className="mt-1 text-xs text-slate-500">
-            {isFailed ? 'The workflow stopped after the integration stage failed.' : 'All workflow stages completed successfully.'}
-          </p>
+      {/* Interactive Node Graph */}
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
+          <CardTitle>Execution topology</CardTitle>
+          <p className="mt-1 text-xs text-slate-500">Interactive DAG visualization. Drag the canvas to explore.</p>
         </CardHeader>
-        <CardContent className="flex gap-4 overflow-x-auto pb-6">
-          {stages.map((stage, index) => (
-            <div key={stage.name} className="relative min-w-[140px] flex-1">
-              <div className={`relative z-10 flex flex-col rounded-md border p-4 shadow-sm transition-colors ${
-                stage.state === 'complete' ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300' : 
-                stage.state === 'failed' ? 'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-300' : 
-                'border-slate-200 bg-white text-slate-500 dark:border-slate-800 dark:bg-[#0a0e17] dark:text-slate-400'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold">{stage.name}</span>
-                  {stage.state === 'complete' ? <Check size={16}/> : stage.state === 'failed' ? <X size={16}/> : <CircleDot size={14}/>}
-                </div>
-                <p className="mt-2 text-xs opacity-80">{stage.duration}</p>
-              </div>
-              {index !== stages.length - 1 && (
-                <div className="absolute left-full top-1/2 z-0 hidden h-px w-4 -translate-y-1/2 bg-slate-200 dark:bg-slate-800 xl:block"/>
-              )}
-            </div>
-          ))}
-        </CardContent>
+        <div className="h-[220px] w-full bg-slate-50 dark:bg-[#030712]">
+          <ReactFlow 
+            nodes={nodes} 
+            edges={edges} 
+            nodeTypes={nodeTypes}
+            fitView 
+            fitViewOptions={{ padding: 0.2 }}
+            className="dark:bg-[#030712]"
+            minZoom={0.5}
+            maxZoom={1.5}
+          >
+            <Background color="#334155" gap={20} size={1} />
+            <Controls showInteractive={false} className="dark:bg-slate-900 dark:border-slate-800 dark:fill-slate-400" />
+          </ReactFlow>
+        </div>
       </Card>
 
+      {/* Terminal Output */}
       <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm dark:border-slate-800">
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-4 py-3 dark:border-slate-800 dark:bg-[#0a0e17]">
           <div className="flex items-center gap-2">
@@ -71,7 +123,7 @@ export default function PipelineDetails() {
           </div>
           <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Copy output"><Copy size={16}/></button>
         </div>
-        <div className="bg-[#030712] p-5 font-mono text-[13px] leading-relaxed text-slate-300 overflow-x-auto max-h-[450px]">
+        <div className="bg-[#030712] p-5 font-mono text-[13px] leading-relaxed text-slate-300 overflow-x-auto max-h-[450px] custom-scrollbar">
           <pre>
             <span className="text-slate-600">14:32:01  </span>Preparing test environment...{'\n'}
             <span className="text-slate-600">14:32:05  </span>postgres://test-db:5432/nexus_test  <span className="text-emerald-400">connected</span>{'\n'}

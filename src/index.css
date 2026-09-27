@@ -2,28 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Aptos Display";
-  src: local("Aptos Display");
-  font-display: swap;
-}
-
 @layer base {
-  * { @apply box-border; }
-  html { @apply bg-[#f7f8fa] antialiased; font-family: "Aptos Display", Aptos, "Segoe UI", sans-serif; }
-  body { @apply m-0 min-w-[320px] bg-[#f7f8fa] text-slate-900 font-sans; }
-  button, input, select { font: inherit; }
-  ::selection { @apply bg-indigo-100 text-indigo-950; }
+  :root {
+    color-scheme: light dark;
+  }
+  
+  html {
+    font-size: 14px; /* <--- THIS MAGIC LINE SCALES THE ENTIRE UI DOWN */
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-zinc-50 text-zinc-900;
+  }
+
+  .dark body {
+    @apply bg-zinc-950 text-zinc-100;
+  }
 }
 
-@layer components {
-  .eyebrow { @apply text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400; }
-  .panel { @apply border border-slate-200 bg-white; }
-  .panel-heading { @apply border-b border-slate-200 px-5 py-4; }
-  .icon-button { @apply grid h-8 w-8 place-items-center border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500/30; }
-  .button-primary { @apply inline-flex items-center justify-center gap-2 bg-slate-950 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400; }
-  .button-secondary { @apply inline-flex items-center justify-center gap-2 border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30; }
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { @apply rounded-full bg-zinc-300 dark:bg-zinc-800; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { @apply bg-zinc-400 dark:bg-zinc-700; }
 }
-
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; }
