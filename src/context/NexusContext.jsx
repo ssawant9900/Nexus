@@ -1,24 +1,37 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
 const NexusContext = createContext();
 
 export function NexusProvider({ children }) {
-  // Shared mock data ready for future FastAPI backend integration
-  const [runs] = useState([
-    { id: '#108', branch: 'main', commit: 'a7f92b4', author: 's.kumar', status: 'Running', duration: '2m 14s', started: 'Just now', cpuPeak: 45 },
-    { id: '#107', branch: 'main', commit: 'c3d81e9', author: 'm.rossi', status: 'Passed', duration: '6m 42s', started: '2 hours ago', cpuPeak: 72 },
-    { id: '#106', branch: 'feature/cart', commit: '91bc21d', author: 's.kumar', status: 'Failed', duration: '4m 12s', started: '5 hours ago', cpuPeak: 91 },
-    { id: '#105', branch: 'release/2.4', commit: 'f4a29c1', author: 'a.patel', status: 'Passed', duration: '7m 05s', started: 'Yesterday', cpuPeak: 68 },
-    { id: '#104', branch: 'feature/auth', commit: 'e8b73f2', author: 's.kumar', status: 'Passed', duration: '6m 55s', started: 'Yesterday', cpuPeak: 54 },
-  ]);
+  // 1. Start completely empty so it forces a fetch from Python
+  const [runs, setRuns] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedRunId, setSelectedRunId] = useState(null);
 
+  // 2. Keep the mock incidents here for now
   const [incidents, setIncidents] = useState([
     { id: 'INC-019', runId: '#106', title: 'Integration tests are missing an authentication token.', state: 'Open', age: '11m' },
     { id: 'INC-018', runId: '#105', title: 'Checkout contract test flake.', state: 'Investigating', age: '1h 24m' },
   ]);
 
-  const [selectedRunId, setSelectedRunId] = useState('#106');
-  
+  // 3. FETCH THE REAL DATA FROM PYTHON
+  useEffect(() => {
+    fetch('http://localhost:8000/api/runs')
+      .then(response => response.json())
+      .then(data => {
+        console.log("✅ SUCCESSFULLY FETCHED FROM PYTHON:", data);
+        setRuns(data);
+        if (data.length > 0) {
+          setSelectedRunId(data[0].id);
+        }
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error("❌ FAILED TO CONNECT TO PYTHON:", error);
+        setIsLoading(false);
+      });
+  }, []);
+
   const selectedRun = useMemo(() => runs.find(r => r.id === selectedRunId) || runs[0], [runs, selectedRunId]);
 
   const resolveIncident = (id) => {
@@ -26,7 +39,7 @@ export function NexusProvider({ children }) {
   };
 
   return (
-    <NexusContext.Provider value={{ runs, incidents, selectedRunId, setSelectedRunId, selectedRun, resolveIncident }}>
+    <NexusContext.Provider value={{ runs, incidents, selectedRunId, setSelectedRunId, selectedRun, resolveIncident, isLoading }}>
       {children}
     </NexusContext.Provider>
   );

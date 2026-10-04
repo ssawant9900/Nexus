@@ -3,36 +3,38 @@ import { useNexus } from './context/NexusContext';
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from './components/ui';
 
 export default function Incidents() {
-  const { incidents, resolveIncident } = useNexus();
+  // Defensive fallback: if incidents is undefined, default to an empty array so it doesn't crash
+  const { incidents = [], resolveIncident } = useNexus(); 
   
-  // Isolate the primary incident (usually the first one or open one)
   const primaryIncident = incidents[0]; 
   const isResolved = primaryIncident?.state === 'Resolved';
   const secondaryIncidents = incidents.slice(1);
 
   const timeline = [
-    { time: '14:32', title: 'Incident opened automatically', text: `Run ${primaryIncident?.runId} failed its integration stage.`, icon: CircleAlert, tone: 'text-rose-600 bg-rose-100 dark:bg-rose-950/50 dark:text-rose-400' },
+    { time: '14:32', title: 'Incident opened automatically', text: `Run ${primaryIncident?.runId || '#106'} failed its integration stage.`, icon: CircleAlert, tone: 'text-rose-600 bg-rose-100 dark:bg-rose-950/50 dark:text-rose-400' },
     { time: '14:33', title: 'Diagnosis attached', text: 'NEXUS identified a missing AUTH_TOKEN in the Docker test container.', icon: MessageSquare, tone: 'text-cyan-600 bg-cyan-100 dark:bg-cyan-950/50 dark:text-cyan-400' },
-    { time: '14:37', title: 'Patch proposed', text: 'Recommendation R-019 is ready for review by the assigned owner.', icon: GitBranch, tone: 'text-zinc-950-600 bg-zinc-950-200 dark:bg-zinc-950-800 dark:text-zinc-950-300' },
+    { time: '14:37', title: 'Patch proposed', text: 'Recommendation R-019 is ready for review by the assigned owner.', icon: GitBranch, tone: 'text-zinc-600 bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300' },
   ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <section className="flex flex-col gap-4 border-b border-zinc-950-200 pb-6 dark:border-zinc-950-800/60 sm:flex-row sm:items-end sm:justify-between">
+      <section className="flex flex-col gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800/60 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-950-500">Incident management</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-950-900 dark:text-white">Keep delivery failures owned.</h1>
-          <p className="mt-1 text-sm text-zinc-950-500">Pipeline failures become incidents when they need a decision, not just a retry.</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Incident management</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">Keep delivery failures owned.</h1>
+          <p className="mt-1 text-sm text-zinc-500">Pipeline failures become incidents when they need a decision, not just a retry.</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-zinc-950-500">Open Incidents</span>
+          <span className="text-sm font-medium text-zinc-500">Open Incidents</span>
           <Badge variant="destructive" className="px-3 py-1 text-sm">
             {incidents.filter(i => i.state !== 'Resolved').length.toString().padStart(2, '0')}
           </Badge>
         </div>
       </section>
 
-<Card className={isResolved ? 'border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/40 dark:bg-emerald-950/10' : 'border-rose-200 shadow-sm dark:border-rose-900/40 dark:bg-rose-950/10'}>        <CardContent className="p-6">
+      {/* Main Incident Card - Styled correctly for Zinc */}
+      <Card className={isResolved ? 'border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/40 dark:bg-emerald-950/10' : 'border-rose-200 shadow-sm dark:border-rose-900/40 dark:bg-rose-950/10'}>
+        <CardContent className="p-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex gap-4">
               <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${isResolved ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400'}`}>
@@ -40,22 +42,22 @@ export default function Incidents() {
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <p className="font-mono text-sm font-bold text-zinc-950-500">{primaryIncident?.id}</p>
+                  <p className="font-mono text-sm font-bold text-zinc-500">{primaryIncident?.id}</p>
                   <Badge variant={isResolved ? "success" : "destructive"} className="uppercase text-[10px]">
                     {primaryIncident?.state}
                   </Badge>
                 </div>
-                <h2 className="mt-3 text-xl font-bold tracking-tight text-zinc-950-900 dark:text-white">{primaryIncident?.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-950-500 dark:text-zinc-950-400">
-                  Run {primaryIncident?.runId} failed after the Docker test container started without <code className="rounded bg-zinc-950-100 px-1.5 py-0.5 font-mono text-xs text-zinc-950-700 dark:bg-[#0a0e17] dark:text-zinc-950-300">AUTH_TOKEN</code>.
+                <h2 className="mt-3 text-xl font-bold tracking-tight text-zinc-900 dark:text-white">{primaryIncident?.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                  Run {primaryIncident?.runId} failed after the Docker test container started without <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs text-zinc-700 dark:bg-[#09090b] dark:text-zinc-300">AUTH_TOKEN</code>.
                 </p>
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-3">
               <Button variant="secondary" className="gap-2"><ExternalLink size={16}/> View run</Button>
               <Button 
-                onClick={() => resolveIncident(primaryIncident.id)} 
-                disabled={isResolved}
+                onClick={() => resolveIncident(primaryIncident?.id)} 
+                disabled={isResolved || !primaryIncident}
                 variant={isResolved ? "secondary" : "default"} 
                 className="gap-2"
               >
@@ -64,24 +66,24 @@ export default function Incidents() {
             </div>
           </div>
           
-          <div className="mt-8 grid border-t border-zinc-950-200 pt-6 dark:border-zinc-950-800/60 md:grid-cols-3 gap-6">
-            <div className="md:border-r border-zinc-950-200 dark:border-zinc-950-800/60">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-950-500">Owner</p>
+          <div className="mt-8 grid border-t border-zinc-200 pt-6 dark:border-zinc-800/60 md:grid-cols-3 gap-6">
+            <div className="md:border-r border-zinc-200 dark:border-zinc-800/60">
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Owner</p>
               <div className="mt-3 flex items-center gap-3">
                 <div className="grid h-8 w-8 place-items-center rounded-full bg-cyan-600 text-xs font-bold text-white">SK</div>
-                <span className="text-sm font-semibold text-zinc-950-900 dark:text-zinc-950-200">Shubham Kumar</span>
+                <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-200">Shubham Kumar</span>
               </div>
             </div>
-            <div className="md:border-r border-zinc-950-200 dark:border-zinc-950-800/60 md:px-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-950-500">Affected surface</p>
-              <p className="mt-3 flex items-center gap-2 text-sm font-medium text-zinc-950-900 dark:text-zinc-950-200">
-                <GitBranch size={16} className="text-zinc-950-400"/> api-service · feature/cart
+            <div className="md:border-r border-zinc-200 dark:border-zinc-800/60 md:px-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Affected surface</p>
+              <p className="mt-3 flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-200">
+                <GitBranch size={16} className="text-zinc-400"/> api-service · feature/cart
               </p>
             </div>
             <div className="md:pl-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-950-500">Time open</p>
-              <p className="mt-3 flex items-center gap-2 text-sm font-medium text-zinc-950-900 dark:text-zinc-950-200">
-                <Clock3 size={16} className="text-zinc-950-400"/> {isResolved ? 'Resolved after 11m' : primaryIncident?.age}
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Time open</p>
+              <p className="mt-3 flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-200">
+                <Clock3 size={16} className="text-zinc-400"/> {isResolved ? 'Resolved after 11m' : primaryIncident?.age}
               </p>
             </div>
           </div>
@@ -92,23 +94,23 @@ export default function Incidents() {
         <Card>
           <CardHeader>
             <CardTitle>Activity timeline</CardTitle>
-            <p className="text-xs text-zinc-950-500 mt-1">System events and owner actions</p>
+            <p className="text-xs text-zinc-500 mt-1">System events and owner actions</p>
           </CardHeader>
           <CardContent>
             {timeline.map(({ time, title, text, icon: Icon, tone }, index) => (
               <div key={title} className="relative flex gap-4 pb-8 last:pb-0">
                 {index < timeline.length - 1 && (
-                  <span className="absolute left-[15px] top-8 h-[calc(100%-24px)] w-px bg-zinc-950-200 dark:bg-zinc-950-800"/>
+                  <span className="absolute left-[15px] top-8 h-[calc(100%-24px)] w-px bg-zinc-200 dark:bg-zinc-800"/>
                 )}
                 <div className={`z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full ${tone}`}>
                   <Icon size={16}/>
                 </div>
                 <div className="min-w-0 flex-1 pt-1">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-zinc-950-900 dark:text-zinc-950-100">{title}</p>
-                    <time className="font-mono text-xs text-zinc-950-400">{time}</time>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{title}</p>
+                    <time className="font-mono text-xs text-zinc-400">{time}</time>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-950-500 dark:text-zinc-950-400">{text}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">{text}</p>
                 </div>
               </div>
             ))}
@@ -116,22 +118,22 @@ export default function Incidents() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-zinc-950-100 dark:border-zinc-950-800/60">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800/60">
             <div>
               <CardTitle>Other incidents</CardTitle>
-              <p className="text-xs text-zinc-950-500 mt-1">Recent incident queue</p>
+              <p className="text-xs text-zinc-500 mt-1">Recent incident queue</p>
             </div>
-            <Button variant="ghost" size="icon" className="text-zinc-950-400">
+            <Button variant="ghost" size="icon" className="text-zinc-400">
               <MoreHorizontal size={18}/>
             </Button>
           </CardHeader>
-          <div className="divide-y divide-zinc-950-100 dark:divide-zinc-950-800/60">
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
             {secondaryIncidents.map((inc) => (
-              <button key={inc.id} className="w-full flex items-center justify-between px-6 py-4 text-left transition-colors hover:bg-zinc-950-50 dark:hover:bg-zinc-950-900/40">
+              <button key={inc.id} className="w-full flex items-center justify-between px-6 py-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/40">
                 <div>
-                  <p className="font-mono text-xs font-bold text-zinc-950-500">{inc.id}</p>
-                  <p className="mt-1.5 text-sm font-semibold text-zinc-950-900 dark:text-zinc-950-200">{inc.title}</p>
-                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-zinc-950-500">
+                  <p className="font-mono text-xs font-bold text-zinc-500">{inc.id}</p>
+                  <p className="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-200">{inc.title}</p>
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-zinc-500">
                     <UserRound size={14}/> Run {inc.runId}
                   </p>
                 </div>
@@ -139,7 +141,7 @@ export default function Incidents() {
                   <Badge variant={inc.state === 'Resolved' ? 'success' : inc.state === 'Monitoring' ? 'warning' : 'outline'} className="text-[10px] uppercase">
                     {inc.state}
                   </Badge>
-                  <span className="text-xs text-zinc-950-400">{inc.age}</span>
+                  <span className="text-xs text-zinc-400">{inc.age}</span>
                 </div>
               </button>
             ))}
